@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111312">
+  <title>Cutwell — Make the moment shorter</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111312;
+      --panel: #191c1a;
+      --panel-soft: #202421;
+      --line: #303632;
+      --text: #f1f3ef;
+      --muted: #9ba39d;
+      --green: #c5f36b;
+      --green-dark: #233018;
+      --orange: #ff9a68;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 75% -15%, rgba(161, 206, 93, .12), transparent 34rem),
+        var(--bg);
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .shell { max-width: 1200px; margin: auto; padding: 0 34px 52px; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 82px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 19px; font-weight: 750; letter-spacing: -.7px; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 31px;
+      height: 31px;
+      color: #141810;
+      background: var(--green);
+      border-radius: 10px 10px 10px 3px;
+      font-size: 19px;
+    }
+    .header-note { color: var(--muted); font-size: 12px; }
+    .hero { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding: 47px 0 30px; }
+    .eyebrow { color: var(--green); font-size: 11px; font-weight: 750; letter-spacing: 1.7px; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(32px, 5vw, 49px); line-height: 1.03; letter-spacing: -2.6px; }
+    .hero p { margin: 0; color: var(--muted); font-size: 14px; }
+    .badge { flex: 0 0 auto; padding: 9px 12px; border: 1px solid var(--line); border-radius: 999px; color: #c5ccc6; font-size: 11px; }
+    .badge span { margin-right: 7px; color: var(--green); }
+
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, .85fr); gap: 18px; align-items: start; }
+    .card { overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: rgba(25,28,26,.94); }
+    .card-heading { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+    .card-heading h2 { margin: 0; font-size: 13px; font-weight: 650; }
+    .step { color: var(--muted); font-size: 11px; }
+    .stage { position: relative; display: grid; min-height: 340px; place-items: center; padding: 25px; background: #101211; }
+    .stage.is-recording .video-frame { visibility: hidden; }
+    .stage.is-recording::after {
+      position: absolute;
+      align-self: center;
+      color: var(--muted);
+      font-size: 12px;
+      content: "Creating your clip on this device…";
+    }
+    .empty-state { width: min(100%, 410px); text-align: center; }
+    .upload-icon { display: grid; width: 54px; height: 54px; place-items: center; margin: 0 auto 17px; color: var(--green); border: 1px solid #3b4930; border-radius: 16px; background: #20271a; font-size: 23px; }
+    .empty-state h3 { margin: 0 0 8px; font-size: 17px; }
+    .empty-state p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .choose-button, .primary-button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      min-height: 41px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 8px;
+      color: #17200d;
+      background: var(--green);
+      font-size: 12px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+    .choose-button { margin-top: 20px; }
+    .choose-button:disabled, .primary-button:disabled { opacity: .4; cursor: not-allowed; }
+    .file-hint { margin-top: 11px !important; font-size: 10px !important; }
+    .url-source { padding: 16px 20px; border-top: 1px solid var(--line); }
+    .url-source label { display: block; margin-bottom: 8px; color: #bac2bb; font-size: 11px; }
+    .url-row { display: flex; gap: 8px; }
+    .url-row input {
+      flex: 1;
+      min-width: 0;
+      height: 39px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      outline: none;
+      color: var(--text);
+      background: #141715;
+      font-size: 11px;
+    }
+    .url-row input:focus { border-color: #789448; }
+    .url-row button { flex: 0 0 auto; padding: 0 13px; border: 1px solid #50643a; border-radius: 7px; color: var(--green); background: #28341f; font-size: 10px; font-weight: 700; cursor: pointer; }
+    .url-row button:disabled { opacity: .4; cursor: not-allowed; }
+    .url-hint { margin: 7px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .video-frame { width: 100%; max-height: 460px; display: block; background: #000; }
+    .video-frame[hidden] { display: none; }
+    .audio-help { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; color: var(--muted); font-size: 10px; line-height: 1.5; text-align: center; }
+    .audio-help[hidden] { display: none; }
+    .audio-button { min-height: 30px; padding: 0 10px; border: 1px solid #50643a; border-radius: 7px; color: var(--green); background: #20271a; font-size: 10px; font-weight: 700; cursor: pointer; }
+    .timeline-wrap { padding: 20px; }
+    .timeline-top { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 11px; }
+    .timeline-top strong { font-weight: 650; }
+    .duration { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .auto-pick-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; padding: 12px; border: 1px solid #35422c; border-radius: 9px; background: #1d2519; }
+    .auto-pick-copy strong, .auto-pick-copy span { display: block; }
+    .auto-pick-copy strong { margin-bottom: 4px; font-size: 11px; }
+    .auto-pick-copy span { color: var(--muted); font-size: 10px; }
+    .auto-button { flex: 0 0 auto; min-height: 34px; padding: 0 11px; border: 1px solid #50643a; border-radius: 7px; color: var(--green); background: #28341f; font-size: 10px; font-weight: 700; cursor: pointer; }
+    .auto-button:disabled { opacity: .4; cursor: not-allowed; }
+    .clip-count-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -5px 0 15px; color: #bac2bb; font-size: 11px; }
+    .clip-count-row input { width: 72px; height: 34px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; outline: none; color: var(--text); background: #141715; font-size: 12px; }
+    .clip-count-row input:focus { border-color: #789448; }
+    .moment-list { margin: -4px 0 16px; padding: 10px 12px 10px 30px; border: 1px solid var(--line); border-radius: 8px; color: #c8d0ca; background: #141715; font-size: 10px; line-height: 1.8; }
+    .moment-list li { padding-left: 2px; }
+    .moment-preview { margin-left: 8px; padding: 3px 7px; border: 1px solid #50643a; border-radius: 5px; color: var(--green); background: #20271a; font-size: 9px; cursor: pointer; }
+    .moment-select { margin-left: 5px; padding: 3px 7px; border: 1px solid var(--line); border-radius: 5px; color: #c8d0ca; background: #202421; font-size: 9px; cursor: pointer; }
+    .moment-select[aria-pressed="true"] { border-color: #708b46; color: var(--green); background: #20271a; }
+    .moment-list[hidden] { display: none; }
+    .track {
+      position: relative;
+      height: 38px;
+      overflow: hidden;
+      border: 1px solid #353d37;
+      border-radius: 7px;
+      background: repeating-linear-gradient(90deg, #242a25 0 2px, #1d221e 2px 6px);
+    }
+    .selection { position: absolute; top: 0; bottom: 0; border-inline: 2px solid var(--green); background: rgba(197,243,107,.14); }
+    .playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: #fff; }
+    .playhead::before { position: absolute; top: 0; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: #fff; content: ""; }
+    .range-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .time-control label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 10px; }
+    .time-row { display: flex; gap: 7px; }
+    .time-row input {
+      width: 100%;
+      min-width: 0;
+      height: 35px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      outline: none;
+      color: var(--text);
+      background: #141715;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .time-row input:focus { border-color: #789448; }
+    .set-time {
+      flex: 0 0 auto;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: #c8d0ca;
+      background: #202421;
+      font-size: 10px;
+      cursor: pointer;
+    }
+    .privacy-note { display: flex; align-items: start; gap: 9px; margin-top: 17px; padding: 11px 12px; border-radius: 8px; color: #aeb8af; background: #202421; font-size: 10px; line-height: 1.5; }
+    .privacy-note b { color: var(--green); }
+
+    .side-card { padding: 20px; }
+    .side-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .side-title h2 { margin: 0; font-size: 13px; }
+    .side-title span { color: var(--muted); font-size: 10px; }
+    .field-label { display: block; margin-bottom: 8px; color: #bac2bb; font-size: 11px; }
+    .format-select {
+      width: 100%;
+      height: 40px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: var(--text);
+      background: #141715;
+      font-size: 11px;
+    }
+    .aspect-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .aspect {
+      min-height: 66px;
+      padding: 9px 5px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #aeb7af;
+      background: #141715;
+      font-size: 10px;
+      cursor: pointer;
+    }
+    .aspect.active { border-color: #708b46; color: var(--green); background: #20271a; }
+    .aspect-icon { display: block; width: 13px; height: 18px; margin: 0 auto 6px; border: 1px solid currentColor; border-radius: 2px; }
+    .aspect:nth-child(2) .aspect-icon { width: 18px; height: 13px; margin-top: 2px; margin-bottom: 9px; }
+    .aspect:nth-child(3) .aspect-icon { width: 16px; height: 16px; margin-top: 1px; margin-bottom: 7px; border-radius: 50%; }
+    .divider { height: 1px; margin: 19px 0; background: var(--line); }
+    .export-note { display: flex; gap: 10px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .export-note .spark { color: var(--green); font-size: 15px; }
+    .primary-button { width: 100%; min-height: 44px; margin-top: 20px; }
+    .status { min-height: 17px; margin: 11px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; text-align: center; }
+    .status.error { color: var(--orange); }
+    .result { margin-top: 12px; padding: 11px; border: 1px solid #38462d; border-radius: 9px; background: #1d2519; }
+    .result[hidden] { display: none; }
+    .result-title { margin-bottom: 8px; color: var(--green); font-size: 11px; font-weight: 700; }
+    .clip-result { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .clip-result:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+    .clip-result-title { margin-bottom: 7px; color: #d3dbd4; font-size: 10px; font-weight: 650; }
+    .clip-result video { display: block; width: 100%; max-height: 160px; margin-bottom: 8px; border-radius: 5px; background: #000; }
+    .download { color: var(--green); font-size: 11px; font-weight: 650; text-decoration: none; }
+    .download:hover { text-decoration: underline; }
+    .trim-another { width: 100%; min-height: 37px; margin-top: 12px; border: 1px solid var(--line); border-radius: 7px; color: #d3dbd4; background: #202421; font-size: 11px; font-weight: 650; cursor: pointer; }
+    .trim-another:hover { border-color: #708b46; color: var(--green); }
+    .rights { margin: 22px 0 0; color: #737c75; font-size: 10px; line-height: 1.6; text-align: center; }
+    .rights a { color: #a9b69b; }
+    #fileInput { display: none; }
+    .toast { position: fixed; right: 20px; bottom: 20px; max-width: min(390px, calc(100vw - 40px)); padding: 12px 15px; border: 1px solid #53633c; border-radius: 9px; color: var(--text); background: #20271a; font-size: 12px; box-shadow: 0 10px 35px #0008; }
+    .toast[hidden] { display: none; }
+    @media (max-width: 760px) {
+      .shell { padding: 0 18px 36px; }
+      .hero { align-items: start; flex-direction: column; padding-top: 35px; }
+      .workspace { grid-template-columns: 1fr; }
+      .stage { min-height: 270px; }
+      .url-source { padding-left: 15px; padding-right: 15px; }
+      .header-note { max-width: 130px; text-align: right; line-height: 1.45; }
+    }
+    @media (max-width: 420px) {
+      .range-grid { grid-template-columns: 1fr; }
+      .stage { padding: 18px; }
+      .card-heading, .timeline-wrap, .side-card { padding-left: 15px; padding-right: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="brand-mark">↗</span>cutwell</div>
+      <div class="header-note">Free, private, on-device editing</div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <div class="eyebrow">The little-big editor</div>
+          <h1>Make the moment<br>shorter.</h1>
+          <p>Choose a video and turn its best moments into clips worth sharing.</p>
+        </div>
+        <div class="badge"><span>●</span>Free · processed on your device</div>
+      </section>
+
+      <div class="workspace">
+        <section class="card" aria-label="Video editor">
+          <div class="card-heading">
+            <h2>Your video</h2>
+            <span class="step" id="fileName">Step 1 of 2 · Add a video</span>
+          </div>
+          <div class="stage" id="stage">
+            <div class="empty-state" id="emptyState">
+              <div class="upload-icon">↑</div>
+              <h3>Bring your own footage</h3>
+              <p>Choose a video you created, own, or have permission to edit. Your video stays on this device while it is processed.</p>
+              <button type="button" class="choose-button" id="chooseButton">Choose video <span>↗</span></button>
+              <p class="file-hint">MP4, WebM, or MOV · No uploads, accounts, or paid services</p>
+            </div>
+            <video class="video-frame" id="sourceVideo" controls playsinline hidden></video>
+            <div class="audio-help" id="audioHelp" hidden>
+              <button type="button" class="audio-button" id="enableAudioButton">Enable preview audio</button>
+              <span>Use this if the player is muted. The source must contain a browser-compatible audio track.</span>
+            </div>
+          </div>
+          <div class="url-source">
+            <label for="videoUrl">Or paste a direct video URL</label>
+            <div class="url-row">
+              <input id="videoUrl" type="url" inputmode="url" placeholder="https://example.com/video.mp4" autocomplete="url" aria-describedby="urlHint">
+              <button type="button" id="loadUrlButton" disabled>Load URL</button>
+            </div>
+            <p class="url-hint" id="urlHint">Use a direct MP4/WebM file link (not a webpage). The host must allow browser access (CORS).</p>
+          </div>
+          <div class="timeline-wrap" id="timelineWrap" hidden>
+            <div class="timeline-top">
+              <strong>Choose your moment</strong>
+              <span class="duration" id="durationLabel">00:00 / 00:00</span>
+            </div>
+            <div class="auto-pick-row">
+              <div class="auto-pick-copy"><strong>Find moments automatically</strong><span>Choose how many distinct clips to prepare · flexible 15–45 sec</span></div>
+              <button type="button" class="auto-button" id="autoButton" disabled>✦ Find moments</button>
+            </div>
+            <label class="clip-count-row" for="clipCount">
+              <span>How many clips do you want?</span>
+              <input id="clipCount" type="number" min="1" max="10" value="3" step="1" disabled>
+            </label>
+            <ol class="moment-list" id="momentList" hidden></ol>
+            <div class="track" id="track" aria-label="Selected clip range">
+              <div class="selection" id="selection"></div>
+              <div class="playhead" id="playhead"></div>
+            </div>
+            <div class="range-grid">
+              <div class="time-control">
+                <label for="startTime">START</label>
+                <div class="time-row">
+                  <input id="startTime" type="number" min="0" step="0.1" value="0" aria-label="Clip start time in seconds">
+                  <button class="set-time" type="button" id="setStart">Use playhead</button>
+                </div>
+              </div>
+              <div class="time-control">
+                <label for="endTime">END</label>
+                <div class="time-row">
+                  <input id="endTime" type="number" min="0.1" step="0.1" value="15" aria-label="Clip end time in seconds">
+                  <button class="set-time" type="button" id="setEnd">Use playhead</button>
+                </div>
+              </div>
+            </div>
+            <div class="privacy-note"><span>✦</span><span><b>Local visual analysis.</b> Auto-pick favors visual activity near the opening and across each clip. It can’t understand speech, predict audience response, or guarantee views or revenue. Review clips before sharing.</span></div>
+          </div>
+        </section>
+
+        <aside class="card side-card" aria-label="Export settings">
+          <div class="side-title"><h2>Clip settings</h2><span>Step 2 of 2</span></div>
+          <label class="field-label" for="formatSelect">File format</label>
+          <select class="format-select" id="formatSelect" aria-label="File format">
+            <option value="">Checking browser support…</option>
+          </select>
+          <div class="divider"></div>
+          <div class="field-label">Aspect ratio</div>
+          <div class="aspect-options" role="group" aria-label="Aspect ratio">
+            <button type="button" class="aspect active" data-ratio="9:16" aria-pressed="true"><span class="aspect-icon"></span>Portrait</button>
+            <button type="button" class="aspect" data-ratio="16:9" aria-pressed="false"><span class="aspect-icon"></span>Landscape</button>
+            <button type="button" class="aspect" data-ratio="1:1" aria-pressed="false"><span class="aspect-icon"></span>Square</button>
+          </div>
+          <div class="divider"></div>
+          <div class="export-note"><span class="spark">✦</span><span>Free browser-based export. Your video stays on your device; encoding runs at playback speed and may take about as long as each clip.</span></div>
+          <button type="button" class="primary-button" id="exportButton" disabled><span>✦</span> Export selected clip</button>
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+          <div class="result" id="result" hidden>
+            <div class="result-title" id="resultTitle">Your clips are ready</div>
+            <div id="resultItems"></div>
+            <button type="button" class="trim-another" id="trimAnotherButton">Trim another video</button>
+          </div>
+        </aside>
+      </div>
+      <p class="rights">Only edit footage you own or are authorized to use. Cutwell does not remove copyright or grant usage rights.</p>
+    </main>
+  </div>
+  <input id="fileInput" type="file" accept="video/*">
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const chooseButton = document.getElementById("chooseButton");
+    const videoUrlInput = document.getElementById("videoUrl");
+    const loadUrlButton = document.getElementById("loadUrlButton");
+    const emptyState = document.getElementById("emptyState");
+    const sourceVideo = document.getElementById("sourceVideo");
+    const audioHelp = document.getElementById("audioHelp");
+    const enableAudioButton = document.getElementById("enableAudioButton");
+    const timelineWrap = document.getElementById("timelineWrap");
+    const startTime = document.getElementById("startTime");
+    const endTime = document.getElementById("endTime");
+    const formatSelect = document.getElementById("formatSelect");
+    const exportButton = document.getElementById("exportButton");
+    const autoButton = document.getElementById("autoButton");
+    const clipCountInput = document.getElementById("clipCount");
+    const momentList = document.getElementById("momentList");
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultItems = document.getElementById("resultItems");
+    const trimAnotherButton = document.getElementById("trimAnotherButton");
+    const selection = document.getElementById("selection");
+    const playhead = document.getElementById("playhead");
+    const durationLabel = document.getElementById("durationLabel");
+    const toast = document.getElementById("toast");
+    const stage = document.getElementById("stage");
+    let sourceUrl = null;
+    let sourceObjectUrl = null;
+    let sourceFile = null;
+    let sourceName = "cutwell-clip";
+    let resultUrls = [];
+    let toastTimer = null;
+    let aspectRatio = 9 / 16;
+    let isWorking = false;
+    let preparedClips = null;
+    let selectedClipIndexes = new Set();
+    let previewEndTime = null;
+    let audioContext = null;
+    let audioSourceNode = null;
+    let audioSourceConnectedToSpeakers = false;
+
+    const exportFormats = [
+      { mimeType: "video/webm;codecs=vp9,opus", label: "WebM · VP9 + Opus", extension: "webm" },
+      { mimeType: "video/webm;codecs=vp8,opus", label: "WebM · VP8 + Opus", extension: "webm" },
+      { mimeType: "video/mp4;codecs=avc1.42E01E,mp4a.40.2", label: "MP4 · H.264 + AAC", extension: "mp4" },
+      { mimeType: "video/mp4", label: "MP4 · browser default codecs", extension: "mp4" }
+    ];
+
+    function populateExportFormats() {
+      formatSelect.replaceChildren();
+      const supportedFormats = window.MediaRecorder
+        ? exportFormats.filter((format) => MediaRecorder.isTypeSupported(format.mimeType))
+        : [];
+      supportedFormats.forEach((format) => {
+        const option = document.createElement("option");
+        option.value = format.mimeType;
+        option.textContent = format.label;
+        formatSelect.appendChild(option);
+      });
+      if (supportedFormats.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "No supported export formats";
+        formatSelect.appendChild(option);
+        exportButton.disabled = true;
+        return;
+      }
+      const preferredFormat = supportedFormats.find((format) => format.mimeType === "video/mp4;codecs=avc1.42E01E,mp4a.40.2") || supportedFormats[0];
+      formatSelect.value = preferredFormat.mimeType;
+    }
+
+    populateExportFormats();
+
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) {
+      status.textContent = "Browser-based export is not supported here. Try a current version of Edge or Chrome.";
+      status.classList.add("error");
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.hidden = true; }, 4200);
+    }
+
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds)) return "00:00";
+      const whole = Math.max(0, Math.floor(seconds));
+      return String(Math.floor(whole / 60)).padStart(2, "0") + ":" + String(whole % 60).padStart(2, "0");
+    }
+
+    function updateSelection() {
+      const duration = sourceVideo.duration;
+      if (!Number.isFinite(duration) || duration <= 0) return;
+      const start = Math.max(0, Math.min(Number(startTime.value) || 0, duration));
+      const end = Math.max(start, Math.min(Number(endTime.value) || 0, duration));
+      selection.style.left = (start / duration * 100) + "%";
+      selection.style.width = ((end - start) / duration * 100) + "%";
+      playhead.style.left = (sourceVideo.currentTime / duration * 100) + "%";
+      durationLabel.textContent = formatTime(sourceVideo.currentTime) + " / " + formatTime(duration);
+      exportButton.disabled = isWorking || !sourceUrl || !formatSelect.value
+        || (preparedClips ? selectedClipIndexes.size === 0 : end - start < 0.1);
+      autoButton.disabled = isWorking || !sourceUrl;
+      clipCountInput.disabled = isWorking || !sourceUrl;
+      exportButton.innerHTML = preparedClips
+        ? "<span>✦</span> Export " + selectedClipIndexes.size + (selectedClipIndexes.size === 1 ? " selected clip" : " selected clips")
+        : "<span>✦</span> Export selected clip";
+      updateUrlButton();
+    }
+
+    function clearPreparedClips(message) {
+      if (!preparedClips) return;
+      preparedClips = null;
+      selectedClipIndexes.clear();
+      momentList.replaceChildren();
+      momentList.hidden = true;
+      if (message) {
+        status.textContent = message;
+        status.classList.remove("error");
+      }
+    }
+
+    function updateUrlButton() {
+      loadUrlButton.disabled = isWorking || !videoUrlInput.value.trim();
+    }
+
+    chooseButton.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    function loadSource(url, name, crossOrigin, objectUrl, file = null) {
+      if (sourceObjectUrl) URL.revokeObjectURL(sourceObjectUrl);
+      clearClipResults();
+      sourceObjectUrl = objectUrl ? url : null;
+      sourceFile = file;
+      sourceUrl = url;
+      sourceName = name;
+      preparedClips = null;
+      selectedClipIndexes.clear();
+      momentList.replaceChildren();
+      momentList.hidden = true;
+      sourceVideo.pause();
+      sourceVideo.removeAttribute("src");
+      sourceVideo.removeAttribute("crossorigin");
+      if (crossOrigin) sourceVideo.crossOrigin = crossOrigin;
+      sourceVideo.src = url;
+      sourceVideo.load();
+      sourceVideo.hidden = false;
+      sourceVideo.muted = false;
+      sourceVideo.defaultMuted = false;
+      sourceVideo.volume = 1;
+      audioHelp.hidden = false;
+      emptyState.hidden = true;
+      timelineWrap.hidden = false;
+      document.getElementById("fileName").textContent = name;
+      result.hidden = true;
+      status.textContent = "Loading video…";
+      status.classList.remove("error");
+      exportButton.disabled = true;
+      autoButton.disabled = true;
+      clipCountInput.disabled = true;
+    }
+
+    function clearClipResults() {
+      resultUrls.forEach((url) => URL.revokeObjectURL(url));
+      resultUrls = [];
+      resultItems.replaceChildren();
+      result.hidden = true;
+      resultTitle.textContent = "Your clips are ready";
+    }
+
+    function resetEditor() {
+      sourceVideo.pause();
+      sourceVideo.removeAttribute("src");
+      sourceVideo.removeAttribute("crossorigin");
+      sourceVideo.load();
+      sourceVideo.hidden = true;
+      audioHelp.hidden = true;
+
+      if (sourceObjectUrl) URL.revokeObjectURL(sourceObjectUrl);
+      clearClipResults();
+      sourceUrl = null;
+      sourceObjectUrl = null;
+      sourceFile = null;
+      sourceName = "cutwell-clip";
+      preparedClips = null;
+      selectedClipIndexes.clear();
+      momentList.replaceChildren();
+      momentList.hidden = true;
+
+      fileInput.value = "";
+      videoUrlInput.value = "";
+      loadUrlButton.disabled = true;
+      document.getElementById("fileName").textContent = "Step 1 of 2 · Add a video";
+      startTime.value = "0";
+      endTime.value = "15";
+      emptyState.hidden = false;
+      timelineWrap.hidden = true;
+      status.textContent = "";
+      status.classList.remove("error");
+      exportButton.disabled = true;
+      autoButton.disabled = true;
+      clipCountInput.disabled = true;
+    }
+
+    trimAnotherButton.addEventListener("click", resetEditor);
+
+    enableAudioButton.addEventListener("click", async () => {
+      sourceVideo.muted = false;
+      sourceVideo.defaultMuted = false;
+      sourceVideo.volume = 1;
+      try {
+        await sourceVideo.play();
+        status.textContent = "Preview audio is enabled. If it is still silent, this video may not have a compatible audio track.";
+        status.classList.remove("error");
+      } catch (error) {
+        status.textContent = error.message || "Could not start video playback. Press Play in the video controls and check the video/device volume.";
+        status.classList.add("error");
+      }
+    });
+
+    videoUrlInput.addEventListener("input", updateUrlButton);
+    loadUrlButton.addEventListener("click", () => {
+      let parsedUrl;
+      try {
+        parsedUrl = new URL(videoUrlInput.value.trim());
+      } catch {
+        status.textContent = "Enter a valid direct video URL.";
+        status.classList.add("error");
+        return;
+      }
+      if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+        status.textContent = "Video URLs must start with http:// or https://.";
+        status.classList.add("error");
+        return;
+      }
+      if (parsedUrl.username || parsedUrl.password) {
+        status.textContent = "Remove login details from the URL before loading it.";
+        status.classList.add("error");
+        return;
+      }
+      const hostname = parsedUrl.hostname.toLowerCase();
+      if (hostname === "youtu.be" || hostname === "youtube.com" || hostname.endsWith(".youtube.com")) {
+        fileInput.value = "";
+        status.textContent = "Streaming-site pages aren’t supported. Paste a direct MP4/WebM video-file URL instead.";
+        status.classList.add("error");
+        return;
+      }
+      fileInput.value = "";
+      loadSource(parsedUrl.href, parsedUrl.pathname.split("/").pop() || parsedUrl.hostname, "anonymous", false);
+    });
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      if (!file.type.startsWith("video/")) {
+        showToast("Please choose a video file.");
+        fileInput.value = "";
+        return;
+      }
+      loadSource(URL.createObjectURL(file), file.name, null, true, file);
+    });
+
+    sourceVideo.addEventListener("loadedmetadata", () => {
+      startTime.max = sourceVideo.duration;
+      endTime.max = sourceVideo.duration;
+      startTime.value = "0";
+      endTime.value = Math.min(15, sourceVideo.duration).toFixed(1);
+      status.textContent = "";
+      status.classList.remove("error");
+      updateSelection();
+    });
+    sourceVideo.addEventListener("error", () => {
+      if (!sourceUrl) return;
+      const errorCode = sourceVideo.error && sourceVideo.error.code;
+      if (sourceObjectUrl) {
+        status.textContent = errorCode === MediaError.MEDIA_ERR_DECODE
+          ? "This file’s video or audio codec could not be decoded by your browser. Try an MP4 encoded with H.264/AAC or a WebM file."
+          : errorCode === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED
+            ? "This file format or codec is not supported by your browser. Try an MP4 encoded with H.264/AAC or a WebM file."
+            : "Could not read this video file. Make sure it is a valid video and try a browser that supports its codecs.";
+      } else {
+        status.textContent = errorCode === MediaError.MEDIA_ERR_DECODE || errorCode === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED
+          ? "The link did not return a playable video. Use a direct MP4/WebM file URL; webpage and streaming-site links aren’t supported."
+          : "Could not load the video URL. Check that it is a direct file link and that its host allows browser access (CORS).";
+      }
+      status.classList.add("error");
+      exportButton.disabled = true;
+      autoButton.disabled = true;
+    });
+    sourceVideo.addEventListener("timeupdate", () => {
+      updateSelection();
+      if (previewEndTime !== null && sourceVideo.currentTime >= previewEndTime) {
+        previewEndTime = null;
+        sourceVideo.pause();
+      }
+    });
+    sourceVideo.addEventListener("pause", () => {
+      if (previewEndTime !== null && sourceVideo.currentTime < previewEndTime - 0.05) {
+        previewEndTime = null;
+      }
+    });
+    sourceVideo.addEventListener("seeked", updateSelection);
+
+    function seekVideo(time) {
+      if (Math.abs(sourceVideo.currentTime - time) < 0.02 && !sourceVideo.seeking) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        let timeout;
+        const finish = (callback, value) => {
+          clearTimeout(timeout);
+          sourceVideo.removeEventListener("seeked", onSeeked);
+          sourceVideo.removeEventListener("error", onError);
+          callback(value);
+        };
+        const onSeeked = () => finish(resolve);
+        const onError = () => finish(reject, new Error("Could not scan this video frame."));
+        timeout = setTimeout(() => finish(reject, new Error("Seeking took too long. Try a shorter video.")), 8000);
+        sourceVideo.addEventListener("seeked", onSeeked);
+        sourceVideo.addEventListener("error", onError);
+        try {
+          sourceVideo.currentTime = time;
+          if (!sourceVideo.seeking && Math.abs(sourceVideo.currentTime - time) < 0.02) finish(resolve);
+        } catch (error) {
+          finish(reject, error);
+        }
+      });
+    }
+
+    async function previewClip(moment, index) {
+      sourceVideo.pause();
+      previewEndTime = moment.end;
+      status.classList.remove("error");
+      status.textContent = "Previewing clip " + index + " — click Export when you're ready.";
+      try {
+        await seekVideo(moment.start);
+        sourceVideo.scrollIntoView({ behavior: "smooth", block: "center" });
+        await sourceVideo.play();
+      } catch (error) {
+        previewEndTime = null;
+        status.textContent = error.message || "Could not preview this clip.";
+        status.classList.add("error");
+      }
+    }
+
+    async function findBestMoments(requestedCount) {
+      const duration = sourceVideo.duration;
+      if (!Number.isFinite(duration) || duration <= 0) throw new Error("This video’s duration could not be read.");
+      if (!Number.isInteger(requestedCount) || requestedCount < 1 || requestedCount > 10) {
+        throw new Error("Choose between 1 and 10 clips to find.");
+      }
+      const minClipLength = 15;
+      const maxClipLength = 45;
+      if (duration <= minClipLength) return [{ start: 0, end: duration }];
+      const maxClips = Math.min(10, Math.floor(duration / minClipLength));
+      const targetCount = Math.min(requestedCount, maxClips);
+
+      sourceVideo.pause();
+      const sampleCount = Math.min(120, Math.max(3, Math.ceil(duration / 4)));
+      const sampleCanvas = document.createElement("canvas");
+      sampleCanvas.width = 48;
+      sampleCanvas.height = 27;
+      const sampleContext = sampleCanvas.getContext("2d", { willReadFrequently: true });
+      const samples = [];
+      let previousFrame = null;
+
+      for (let index = 0; index < sampleCount; index += 1) {
+        const time = Math.min(duration - 0.05, index * (duration - 0.05) / (sampleCount - 1));
+        await seekVideo(time);
+        sampleContext.drawImage(sourceVideo, 0, 0, sampleCanvas.width, sampleCanvas.height);
+        const frame = sampleContext.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height).data;
+        let activity = 0;
+        if (previousFrame) {
+          for (let pixel = 0; pixel < frame.length; pixel += 4) {
+            const currentLuma = frame[pixel] * 0.299 + frame[pixel + 1] * 0.587 + frame[pixel + 2] * 0.114;
+            const previousLuma = previousFrame[pixel] * 0.299 + previousFrame[pixel + 1] * 0.587 + previousFrame[pixel + 2] * 0.114;
+            activity += Math.abs(currentLuma - previousLuma);
+          }
+          activity /= (sampleCanvas.width * sampleCanvas.height * 255);
+        }
+        samples.push({ time, activity });
+        previousFrame = frame;
+        status.textContent = "Scanning for visual activity… " + Math.round((index + 1) / sampleCount * 100) + "%";
+        await new Promise(requestAnimationFrame);
+      }
+
+      const candidates = [];
+      const durations = [15, 25, 35, 45].filter((length) => length <= duration);
+      const candidateStep = Math.max(5, duration / 120);
+      const scoreWindow = (start, length) => {
+        const end = start + length;
+        const windowSamples = samples.filter((entry) => entry.time >= start && entry.time <= end);
+        if (!windowSamples.length) return 0;
+        const meanActivity = windowSamples.reduce((sum, entry) => sum + entry.activity, 0) / windowSamples.length;
+        const hookSamples = windowSamples.filter((entry) => entry.time <= start + Math.min(5, length / 3));
+        const hookActivity = hookSamples.length
+          ? hookSamples.reduce((sum, entry) => sum + entry.activity, 0) / hookSamples.length
+          : 0;
+        const peakActivity = windowSamples.reduce((peak, entry) => Math.max(peak, entry.activity), 0);
+        const activityScore = meanActivity * 0.55 + hookActivity * 0.3 + peakActivity * 0.15;
+        const durationPreference = 0.9 + (length - minClipLength) / (maxClipLength - minClipLength) * 0.1;
+        return activityScore * durationPreference;
+      };
+
+      for (const clipLength of durations) {
+        const lastStart = Math.max(0, duration - clipLength);
+        for (let start = 0; start <= lastStart; start += candidateStep) {
+          candidates.push({ start, end: start + clipLength, score: scoreWindow(start, clipLength) });
+        }
+        if (!candidates.some((candidate) => candidate.end === duration && candidate.start === lastStart)) {
+          candidates.push({ start: lastStart, end: duration, score: scoreWindow(lastStart, clipLength) });
+        }
+      }
+
+      const highestScore = Math.max(...candidates.map((candidate) => candidate.score));
+      if (highestScore <= 0) {
+        const fallbackLength = Math.min(maxClipLength, duration / targetCount);
+        if (targetCount === 1) {
+          const start = (duration - fallbackLength) / 2;
+          return [{ start, end: start + fallbackLength }];
+        }
+        const spacing = Math.max(fallbackLength, (duration - fallbackLength) / (targetCount - 1));
+        return Array.from({ length: targetCount }, (_, index) => {
+          const start = Math.min(index * spacing, duration - fallbackLength);
+          return { start, end: start + fallbackLength };
+        });
+      }
+
+      candidates.sort((left, right) => {
+        const scoreDifference = right.score - left.score;
+        if (Math.abs(scoreDifference) > 0.0001) return scoreDifference;
+        return right.end - right.start - (left.end - left.start) || left.start - right.start;
+      });
+      const minimumInterestingScore = Math.max(0.005, highestScore * 0.25);
+      const selected = [];
+      for (const candidate of candidates) {
+        if (candidate.score < minimumInterestingScore) break;
+        const overlaps = selected.some((moment) => candidate.start < moment.end && candidate.end > moment.start);
+        if (!overlaps) selected.push(candidate);
+        if (selected.length >= targetCount) break;
+      }
+
+      if (selected.length === 0) throw new Error("Could not find any distinct moments in this video.");
+      return selected.sort((left, right) => left.start - right.start);
+    }
+
+    startTime.addEventListener("change", () => {
+      clearPreparedClips("Clip range changed. Click Export selected clip when ready.");
+      const duration = sourceVideo.duration || 0;
+      const value = Math.max(0, Math.min(Number(startTime.value) || 0, Number(endTime.value) - 0.1, duration));
+      startTime.value = value.toFixed(1);
+      updateSelection();
+    });
+    endTime.addEventListener("change", () => {
+      clearPreparedClips("Clip range changed. Click Export selected clip when ready.");
+      const duration = sourceVideo.duration || 0;
+      const value = Math.max(Number(startTime.value) + 0.1, Math.min(Number(endTime.value) || 0, duration));
+      endTime.value = value.toFixed(1);
+      updateSelection();
+    });
+    document.getElementById("setStart").addEventListener("click", () => {
+      clearPreparedClips("Clip range changed. Click Export selected clip when ready.");
+      startTime.value = Math.min(sourceVideo.currentTime, Number(endTime.value) - 0.1).toFixed(1);
+      updateSelection();
+    });
+    document.getElementById("setEnd").addEventListener("click", () => {
+      clearPreparedClips("Clip range changed. Click Export selected clip when ready.");
+      endTime.value = Math.max(sourceVideo.currentTime, Number(startTime.value) + 0.1).toFixed(1);
+      updateSelection();
+    });
+
+    clipCountInput.addEventListener("change", () => {
+      const requestedCount = Number(clipCountInput.value);
+      clipCountInput.value = String(Math.min(10, Math.max(1, Number.isFinite(requestedCount) ? Math.floor(requestedCount) : 1)));
+      clearPreparedClips("Clip count changed. Find moments again to prepare that many clips.");
+      updateSelection();
+    });
+
+    document.querySelectorAll(".aspect").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".aspect").forEach((option) => {
+          const active = option === button;
+          option.classList.toggle("active", active);
+          option.setAttribute("aria-pressed", String(active));
+        });
+        const [ratioWidth, ratioHeight] = button.dataset.ratio.split(":").map(Number);
+        aspectRatio = ratioWidth / ratioHeight;
+        showToast(button.dataset.ratio + " selected. Video will be center-cropped to fit.");
+      });
+    });
+
+    async function createClip(
+      clipStart = Number(startTime.value),
+      clipEnd = Number(endTime.value),
+      clipIndex = 1,
+      clipCount = 1,
+      appendResult = false,
+      keepBusy = false
+    ) {
+      const start = Number(clipStart);
+      const end = Number(clipEnd);
+      if (!sourceVideo.src || !Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+        status.textContent = "Choose a valid start and end time first.";
+        status.classList.add("error");
+        return false;
+      }
+      if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) {
+        status.textContent = "Clip export is not supported in this browser. Try a current version of Chrome or Edge.";
+        status.classList.add("error");
+        return false;
+      }
+
+      if (!appendResult) clearClipResults();
+      status.classList.remove("error");
+      status.textContent = clipCount > 1
+        ? "Preparing clip " + clipIndex + " of " + clipCount + "…"
+        : "Preparing your clip…";
+
+      const canvas = document.createElement("canvas");
+      const width = sourceVideo.videoWidth;
+      const height = sourceVideo.videoHeight;
+      if (!width || !height) {
+        status.textContent = "This video has no readable frame size.";
+        status.classList.add("error");
+        return false;
+      }
+      const sourceRatio = width / height;
+      const cropWidth = sourceRatio > aspectRatio ? Math.round(height * aspectRatio) : width;
+      const cropHeight = sourceRatio > aspectRatio ? height : Math.round(width / aspectRatio);
+      const cropX = Math.floor((width - cropWidth) / 2);
+      const cropY = Math.floor((height - cropHeight) / 2);
+      const outputScale = Math.min(1, 1280 / Math.max(cropWidth, cropHeight));
+      const outputWidth = Math.max(2, Math.floor(cropWidth * outputScale / 2) * 2);
+      const outputHeight = Math.max(2, Math.floor(cropHeight * outputScale / 2) * 2);
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        status.textContent = "This browser could not create an export canvas.";
+        status.classList.add("error");
+        return false;
+      }
+      const outputStream = canvas.captureStream(24);
+      let audioDestinationNode = null;
+      let audioDestinationConnected = false;
+      let audioCaptureStream = null;
+      try {
+        if (window.AudioContext) {
+          audioContext = audioContext || new AudioContext();
+          audioSourceNode = audioSourceNode || audioContext.createMediaElementSource(sourceVideo);
+          if (!audioSourceConnectedToSpeakers) {
+            audioSourceNode.connect(audioContext.destination);
+            audioSourceConnectedToSpeakers = true;
+          }
+          audioDestinationNode = audioContext.createMediaStreamDestination();
+          audioSourceNode.connect(audioDestinationNode);
+          audioDestinationConnected = true;
+          audioCaptureStream = audioDestinationNode.stream;
+          audioCaptureStream.getAudioTracks().forEach((track) => outputStream.addTrack(track));
+          await audioContext.resume();
+        } else {
+          const captureVideoStream = sourceVideo.captureStream || sourceVideo.mozCaptureStream;
+          if (typeof captureVideoStream === "function") {
+            audioCaptureStream = captureVideoStream.call(sourceVideo);
+            audioCaptureStream.getAudioTracks().forEach((track) => outputStream.addTrack(track));
+          }
+        }
+      } catch (error) {
+        if (audioDestinationConnected) {
+          audioSourceNode.disconnect(audioDestinationNode);
+          audioDestinationConnected = false;
+        }
+        if (audioCaptureStream) audioCaptureStream.getTracks().forEach((track) => track.stop());
+        outputStream.getTracks().forEach((track) => track.stop());
+        status.textContent = error.message || "The browser could not capture audio from this video.";
+        status.classList.add("error");
+        return false;
+      }
+      const hasAudio = outputStream.getAudioTracks().length > 0;
+
+      const mimeType = formatSelect.value;
+      const selectedFormat = exportFormats.find((format) => format.mimeType === mimeType);
+      if (!mimeType || !selectedFormat || !MediaRecorder.isTypeSupported(mimeType)) {
+        status.textContent = "The selected export format is not supported by this browser.";
+        status.classList.add("error");
+        outputStream.getTracks().forEach((track) => track.stop());
+        return false;
+      }
+
+      isWorking = true;
+      exportButton.disabled = true;
+      try {
+        await seekVideo(start);
+
+        await new Promise((resolve, reject) => {
+          const chunks = [];
+          let animationFrame = 0;
+          let lastDrawTime = 0;
+          let finished = false;
+          const recorder = new MediaRecorder(outputStream, { mimeType });
+          const cleanUp = () => {
+            cancelAnimationFrame(animationFrame);
+            sourceVideo.pause();
+            stage.classList.remove("is-recording");
+            outputStream.getTracks().forEach((track) => track.stop());
+            if (audioDestinationConnected) {
+              audioSourceNode.disconnect(audioDestinationNode);
+              audioDestinationConnected = false;
+            }
+            if (audioCaptureStream) audioCaptureStream.getTracks().forEach((track) => track.stop());
+          };
+          const drawFrame = () => {
+            if (finished) return;
+            if (sourceVideo.currentTime >= end || sourceVideo.ended) {
+              finished = true;
+              recorder.stop();
+              sourceVideo.pause();
+              return;
+            }
+            const now = performance.now();
+            if (now - lastDrawTime >= 1000 / 24) {
+              context.drawImage(sourceVideo, cropX, cropY, cropWidth, cropHeight, 0, 0, outputWidth, outputHeight);
+              lastDrawTime = now;
+            }
+            animationFrame = requestAnimationFrame(drawFrame);
+          };
+          recorder.addEventListener("dataavailable", (event) => {
+            if (event.data.size) chunks.push(event.data);
+          });
+          recorder.addEventListener("error", (event) => {
+            cleanUp();
+            reject(event.error || new Error("Recording failed."));
+          }, { once: true });
+          recorder.addEventListener("stop", () => {
+            cleanUp();
+            if (!chunks.length) {
+              reject(new Error("No video data was recorded. Try another video or browser."));
+              return;
+            }
+            resolve(new Blob(chunks, { type: mimeType }));
+          }, { once: true });
+          try {
+            context.drawImage(sourceVideo, cropX, cropY, cropWidth, cropHeight, 0, 0, outputWidth, outputHeight);
+            stage.classList.add("is-recording");
+            recorder.start(250);
+            animationFrame = requestAnimationFrame(drawFrame);
+            sourceVideo.play().catch((error) => {
+              if (recorder.state !== "inactive") recorder.stop();
+              cleanUp();
+              reject(error);
+            });
+          } catch (error) {
+            cleanUp();
+            reject(error);
+          }
+        }).then((blob) => {
+          const resultUrl = URL.createObjectURL(blob);
+          resultUrls.push(resultUrl);
+          const clipResult = document.createElement("div");
+          clipResult.className = "clip-result";
+          const clipTitle = document.createElement("div");
+          clipTitle.className = "clip-result-title";
+          clipTitle.textContent = "Clip " + clipIndex + " · " + formatTime(start) + "–" + formatTime(end);
+          const clipVideo = document.createElement("video");
+          clipVideo.controls = true;
+          clipVideo.playsInline = true;
+          clipVideo.src = resultUrl;
+          const link = document.createElement("a");
+          link.className = "download";
+          link.href = resultUrl;
+          link.download = (sourceName.replace(/\.[^.]+$/, "") || "cutwell-clip")
+            + (clipCount > 1 ? "-clip-" + String(clipIndex).padStart(2, "0") : "-clip")
+            + "." + selectedFormat.extension;
+          link.textContent = "↓  Download clip " + clipIndex;
+          clipResult.append(clipTitle, clipVideo, link);
+          resultItems.appendChild(clipResult);
+          resultTitle.textContent = clipCount > 1
+            ? resultUrls.length + " of " + clipCount + " clips ready"
+            : "Your clip is ready";
+          result.hidden = false;
+          status.textContent = clipCount > 1
+            ? "Created clip " + clipIndex + " of " + clipCount + (hasAudio ? " with audio." : " without a captured audio track.")
+            : hasAudio
+              ? "Done — your clip was created on this device with audio."
+              : "Clip created, but no audio track was captured. The source may be silent or this browser may not support audio capture.";
+        });
+        return true;
+      } catch (error) {
+        sourceVideo.pause();
+        stage.classList.remove("is-recording");
+        outputStream.getTracks().forEach((track) => track.stop());
+        if (audioDestinationConnected) {
+          audioSourceNode.disconnect(audioDestinationNode);
+          audioDestinationConnected = false;
+        }
+        if (audioCaptureStream) audioCaptureStream.getTracks().forEach((track) => track.stop());
+        status.textContent = error.message || "Could not create this clip. Try a different video.";
+        status.classList.add("error");
+        return false;
+      } finally {
+        if (!keepBusy) isWorking = false;
+        updateSelection();
+      }
+    }
+
+    async function exportClips(clips) {
+      if (!clips.length) {
+        status.textContent = "No clips were selected.";
+        status.classList.add("error");
+        return false;
+      }
+
+      clearClipResults();
+      isWorking = true;
+      updateSelection();
+      status.classList.remove("error");
+
+      try {
+        for (let index = 0; index < clips.length; index += 1) {
+          const clip = clips[index];
+          status.textContent = clips.length > 1
+            ? "Creating clip " + (index + 1) + " of " + clips.length + " on this device. Encoding runs at playback speed…"
+            : "Creating your clip on this device. Encoding runs at playback speed…";
+          const created = await createClip(
+            clip.start,
+            clip.end,
+            index + 1,
+            clips.length,
+            index > 0,
+            true
+          );
+          if (!created) return false;
+        }
+        status.textContent = clips.length > 1
+          ? "Done — " + clips.length + " clips are ready to download individually."
+          : "Done — your clip is ready to download.";
+        return true;
+      } finally {
+        isWorking = false;
+        updateSelection();
+      }
+    }
+
+    exportButton.addEventListener("click", () => {
+      if (preparedClips) {
+        const selectedClips = preparedClips.filter((_, index) => selectedClipIndexes.has(index));
+        if (selectedClips.length === 0) {
+          status.textContent = "Select at least one clip to export.";
+          status.classList.add("error");
+          return;
+        }
+        exportClips(selectedClips);
+        return;
+      }
+      const start = Number(startTime.value);
+      const end = Number(endTime.value);
+      if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+        status.textContent = "Choose a valid start and end time first.";
+        status.classList.add("error");
+        return;
+      }
+      exportClips([{ start, end }]);
+    });
+
+    autoButton.addEventListener("click", async () => {
+      clearClipResults();
+      preparedClips = null;
+      selectedClipIndexes.clear();
+      momentList.replaceChildren();
+      momentList.hidden = true;
+      isWorking = true;
+      updateSelection();
+      status.classList.remove("error");
+      try {
+        const requestedCount = Number(clipCountInput.value);
+        const moments = await findBestMoments(requestedCount);
+        preparedClips = moments;
+        selectedClipIndexes = new Set(moments.map((_, index) => index));
+        moments.forEach((moment, index) => {
+          const item = document.createElement("li");
+          const label = document.createElement("span");
+          label.textContent = "Clip " + (index + 1) + " · " + formatTime(moment.start) + "–" + formatTime(moment.end);
+          const previewButton = document.createElement("button");
+          previewButton.type = "button";
+          previewButton.className = "moment-preview";
+          previewButton.textContent = "Preview";
+          previewButton.setAttribute("aria-label", "Preview clip " + (index + 1) + " before export");
+          previewButton.addEventListener("click", () => previewClip(moment, index + 1));
+          const selectButton = document.createElement("button");
+          selectButton.type = "button";
+          selectButton.className = "moment-select";
+          selectButton.textContent = "Selected";
+          selectButton.setAttribute("aria-pressed", "true");
+          selectButton.setAttribute("aria-label", "Deselect clip " + (index + 1) + " for export");
+          selectButton.addEventListener("click", () => {
+            if (selectedClipIndexes.has(index)) {
+              selectedClipIndexes.delete(index);
+              selectButton.textContent = "Select";
+              selectButton.setAttribute("aria-pressed", "false");
+              selectButton.setAttribute("aria-label", "Select clip " + (index + 1) + " for export");
+            } else {
+              selectedClipIndexes.add(index);
+              selectButton.textContent = "Selected";
+              selectButton.setAttribute("aria-pressed", "true");
+              selectButton.setAttribute("aria-label", "Deselect clip " + (index + 1) + " for export");
+            }
+            updateSelection();
+            status.classList.remove("error");
+            status.textContent = selectedClipIndexes.size
+              ? selectedClipIndexes.size + " of " + preparedClips.length + " clips selected for export."
+              : "No clips selected. Select at least one clip to enable export.";
+          });
+          item.append(label, previewButton, selectButton);
+          momentList.appendChild(item);
+        });
+        momentList.hidden = false;
+        status.textContent = moments.length < requestedCount
+          ? "Found " + moments.length + " of " + requestedCount + " requested clips; all found clips are selected. Review them above, then click Export."
+          : "Found " + moments.length + " clips; all are selected. Review them above, then click Export when ready.";
+      } catch (error) {
+        status.textContent = error.message || "Could not analyze this video. Try a different file.";
+        status.classList.add("error");
+        preparedClips = null;
+        selectedClipIndexes.clear();
+      } finally {
+        isWorking = false;
+        updateSelection();
+      }
+    });
+  </script>
+</body>
+</html>
